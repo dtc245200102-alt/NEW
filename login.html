@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Nhập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-md w-96">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Đăng Nhập</h2>
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" required class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                <input type="password" id="password" required class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Đăng Nhập</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">Chưa có tài khoản? <a href="register.html" class="text-blue-600 font-bold">Đăng ký</a></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                // Lưu thông tin user vào trình duyệt để dùng cho trang Dashboard
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.href = 'dashboard.html';
+            } else {
+                alert(data.message);
+            }
+        });
+    </script>
+</body>
+</html>
