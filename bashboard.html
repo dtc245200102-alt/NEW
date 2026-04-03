@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống Quản lý</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-gray-800 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold">TechCare Workspace</h1>
+        <div class="flex items-center space-x-4">
+            <span id="welcomeMsg" class="font-medium"></span>
+            <button onclick="logout()" class="bg-red-500 px-4 py-1 rounded hover:bg-red-600 text-sm">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-10 px-4">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">Nghiệp vụ: Tra Cứu Bảo Hành</h2>
+            
+            <div class="flex mt-4">
+                <input type="text" id="imeiSearch" placeholder="Nhập mã IMEI (VD: 111122223333444)" class="flex-1 px-4 py-2 border rounded-l focus:outline-none focus:border-blue-500">
+                <button onclick="searchWarranty()" class="bg-blue-600 text-white px-6 py-2 rounded-r hover:bg-blue-700 font-bold">Tìm kiếm</button>
+            </div>
+
+            <div id="resultBox" class="mt-6 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert("Bạn cần đăng nhập để truy cập trang này!");
+            window.location.href = 'login.html';
+        } else {
+            const user = JSON.parse(userStr);
+            document.getElementById('welcomeMsg').innerText = `Xin chào, ${user.fullname}`;
+        }
+
+        // Hàm Đăng xuất
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        // Hàm Tra cứu gọi API
+        async function searchWarranty() {
+            const imei = document.getElementById('imeiSearch').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            
+            if(!imei) return alert("Vui lòng nhập IMEI");
+
+            const res = await fetch(`/api/warranty/${imei}`);
+            const data = await res.json();
+
+            resultBox.classList.remove('hidden');
+            if (data.success) {
+                const info = data.data;
+                const statusColor = info.tinhTrang.includes("Đang") ? "text-green-600" : "text-red-600";
+                resultBox.innerHTML = `
+                    <div class="p-4 bg-blue-50 rounded border border-blue-100">
+                        <p><strong>Khách hàng:</strong> ${info.khachHang}</p>
+                        <p><strong>Thiết bị:</strong> ${info.thietBi}</p>
+                        <p><strong>Trạng thái:</strong> <span class="font-bold ${statusColor}">${info.tinhTrang}</span></p>
+                        <p><strong>Ngày hết hạn:</strong> ${info.ngayHetHan}</p>
+                    </div>
+                `;
+            } else {
+                resultBox.innerHTML = `<div class="p-4 bg-red-50 text-red-600 rounded">${data.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
